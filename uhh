@@ -1,0 +1,123 @@
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+const effects = [
+  { id: 1, name: "Speed", effect: "minecraft:speed" },
+  { id: 2, name: "Slowness", effect: "minecraft:slowness" },
+  { id: 3, name: "Haste", effect: "minecraft:haste" },
+  { id: 4, name: "Mining Fatigue", effect: "minecraft:mining_fatigue" },
+  { id: 5, name: "Strength", effect: "minecraft:strength" },
+  { id: 6, name: "Instant Health", effect: "minecraft:instant_health" },
+  { id: 7, name: "Instant Damage", effect: "minecraft:instant_damage" },
+  { id: 8, name: "Jump Boost", effect: "minecraft:jump_boost" },
+  { id: 9, name: "Nausea", effect: "minecraft:nausea" },
+  { id: 10, name: "Regeneration", effect: "minecraft:regeneration" },
+  { id: 11, name: "Resistance", effect: "minecraft:resistance" },
+  { id: 12, name: "Fire Resistance", effect: "minecraft:fire_resistance" },
+  { id: 13, name: "Water Breathing", effect: "minecraft:water_breathing" },
+  { id: 14, name: "Invisibility", effect: "minecraft:invisibility" },
+  { id: 15, name: "Blindness", effect: "minecraft:blindness" },
+  { id: 16, name: "Night Vision", effect: "minecraft:night_vision" },
+  { id: 17, name: "Hunger", effect: "minecraft:hunger" },
+  { id: 18, name: "Weakness", effect: "minecraft:weakness" },
+  { id: 19, name: "Poison", effect: "minecraft:poison" },
+  { id: 20, name: "Wither", effect: "minecraft:wither" },
+  { id: 21, name: "Health Boost", effect: "minecraft:health_boost" },
+  { id: 22, name: "Absorption", effect: "minecraft:absorption" },
+  { id: 23, name: "Saturation", effect: "minecraft:saturation" },
+  { id: 24, name: "Glowing", effect: "minecraft:glowing" },
+  { id: 25, name: "Levitation", effect: "minecraft:levitation" },
+  { id: 26, name: "Luck", effect: "minecraft:luck" },
+  { id: 27, name: "Bad Luck", effect: "minecraft:unluck" },
+];
+
+export default function PotionGenerator() {
+  const [effectsList, setEffectsList] = useState([
+    { effect: effects[0].effect, level: 1, duration: 600 }
+  ]);
+  const [textureUrl, setTextureUrl] = useState("");
+
+  const updateEffect = (index, field, value) => {
+    const updated = [...effectsList];
+    updated[index][field] = value;
+    setEffectsList(updated);
+  };
+
+  const addEffect = () => {
+    setEffectsList([...effectsList, { effect: effects[0].effect, level: 1, duration: 600 }]);
+  };
+
+  const generateCommand = () => {
+    const effectStrings = effectsList
+      .map(
+        (e) => `{Id:\"${e.effect}\",Duration:${e.duration},Amplifier:${e.level}}`
+      )
+      .join(",");
+
+    const textureTag = textureUrl
+      ? `,CustomModelData:1,display:{Name:\"Custom Potion\",Lore:[\"Custom Texture\"],\"CustomTexture\":\"${textureUrl}\"}`
+      : `,display:{Name:\"Custom Potion\"}`;
+
+    return `/give @p minecraft:potion{CustomPotionEffects:[${effectStrings}]${textureTag}} 1`;
+  };
+
+  return (
+    <div className="p-4 max-w-xl mx-auto space-y-4">
+      <Card>
+        <CardContent className="space-y-4 p-4">
+          {effectsList.map((eff, idx) => (
+            <div key={idx} className="space-y-2 border p-2 rounded-md">
+              <label className="block text-sm font-medium">Potion Effect</label>
+              <select
+                className="w-full border rounded p-2"
+                value={eff.effect}
+                onChange={(e) => updateEffect(idx, "effect", e.target.value)}
+              >
+                {effects.map((opt) => (
+                  <option key={opt.id} value={opt.effect}>
+                    {opt.name}
+                  </option>
+                ))}
+              </select>
+
+              <label className="block text-sm font-medium">Amplifier Level (0 = level I)</label>
+              <Input
+                type="number"
+                placeholder="Amplifier Level"
+                value={eff.level}
+                onChange={(e) => updateEffect(idx, "level", Number(e.target.value))}
+              />
+
+              <label className="block text-sm font-medium">Duration (ticks)</label>
+              <Input
+                type="number"
+                placeholder="Duration in ticks"
+                value={eff.duration}
+                onChange={(e) => updateEffect(idx, "duration", Number(e.target.value))}
+              />
+            </div>
+          ))}
+
+          <Button variant="outline" onClick={addEffect}>
+            ➕ Add Another Effect
+          </Button>
+
+          <label className="block text-sm font-medium mt-4">Custom Texture URL</label>
+          <Input
+            placeholder="Paste potion texture image URL here"
+            value={textureUrl}
+            onChange={(e) => setTextureUrl(e.target.value)}
+          />
+
+          <p className="text-sm break-all mt-2">{generateCommand()}</p>
+
+          {textureUrl && (
+            <img src={textureUrl} alt="Potion Texture Preview" className="w-16 h-16 mx-auto mt-4" />
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
